@@ -323,7 +323,7 @@
             },
             {
               "name": "Authorization",
-              "value": "Bearer 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"
+              "value": "Bearer YOUR_TAVILY_API_KEY"
             }
           ]
         },
@@ -405,10 +405,7 @@
       "id": "da997350-203f-4cc8-ab64-4e5c99d72a95",
       "name": "OpenAI Chat Model2",
       "credentials": {
-        "openAiApi": {
-          "id": "giL192PM2gZDCdCF",
-          "name": "OpenAi account"
-        }
+        "openAiApi": {}
       }
     },
     {
@@ -427,10 +424,7 @@
       "name": "Send a text message",
       "webhookId": "58b4e3f2-f111-46f4-ac7f-8ca59216ee03",
       "credentials": {
-        "telegramApi": {
-          "id": "DsZtzvc6TCc2b0qI",
-          "name": "Telegram account"
-        }
+        "telegramApi": {}
       }
     },
     {
