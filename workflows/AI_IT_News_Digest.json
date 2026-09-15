@@ -197,7 +197,7 @@
     },
     {
       "parameters": {
-        "chatId": "-1003671561098",
+        "chatId": "YOUR_CHAT_ID",
         "text": "={{$json.output}}",
         "additionalFields": {}
       },
@@ -211,10 +211,7 @@
       "name": "Send a text message",
       "webhookId": "f4e1f424-8cd9-42b9-a58b-11c2ba2c3305",
       "credentials": {
-        "telegramApi": {
-          "id": "Yfr1IO7RZWziBWpm",
-          "name": "Telegram account"
-        }
+        "telegramApi": {}
       }
     },
     {
