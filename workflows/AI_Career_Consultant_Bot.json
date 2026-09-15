@@ -59,12 +59,7 @@
       "id": "243d5e8d-95ac-4047-b7a8-1e03dab82aae",
       "name": "Telegram Trigger",
       "webhookId": "50be03cc-38f9-4d6c-852c-afa6d2862835",
-      "credentials": {
-        "telegramApi": {
-          "id": "Yfr1IO7RZWziBWpm",
-          "name": "Telegram account"
-        }
-      }
+      "credentials": {}
     },
     {
       "parameters": {
@@ -91,7 +86,7 @@
     {
       "parameters": {
         "sessionIdType": "customKey",
-        "sessionKey": "={{ $json.message.chat.id }}",
+        "sessionKey": "USER_SESSION_ID",
         "contextWindowLength": 10
       },
       "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
