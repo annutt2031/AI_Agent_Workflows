@@ -51,10 +51,7 @@
       "id": "24c7ceaa-420c-4c04-983e-9075b6887ff0",
       "name": "OpenAI Chat Model",
       "credentials": {
-        "openAiApi": {
-          "id": "1r4igq3XYPNhMnTx",
-          "name": "OpenAi account"
-        }
+        "openAiApi": {}
       }
     },
     {
@@ -134,7 +131,7 @@
     },
     {
       "parameters": {
-        "chatId": "-1003671561098",
+        "chatId": "YOUR_CHAT_ID",
         "text": "={{$json.output}}",
         "additionalFields": {}
       },
@@ -148,10 +145,7 @@
       "name": "Send a text message",
       "webhookId": "f4e1f424-8cd9-42b9-a58b-11c2ba2c3305",
       "credentials": {
-        "telegramApi": {
-          "id": "Yfr1IO7RZWziBWpm",
-          "name": "Telegram account"
-        }
+      "credentials": {}
       }
     }
   ],
