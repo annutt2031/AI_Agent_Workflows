@@ -2,8 +2,24 @@
 
 Общий принцип работы workflow:
 
-User/API source --> n8n Workflow --> Data processing --> AI Agent / LLM --> Telegram / User output
-
+```
+Пользователь
+     |
+     ↓
+Telegram Bot / Chat Interface
+     |
+     ↓
+n8n Workflow
+     |
+     ↓
+AI Agent
+     |
+     ↓
+LLM Model
+     |
+     ↓
+Ответ пользователю
+```
 
 Основные компоненты:
 - n8n — оркестрация процессов;
