@@ -2,19 +2,7 @@
 
 Общий принцип работы workflow:
 
-User/API source
-        |
-        ↓
-n8n Workflow
-        |
-        ↓
-Data processing
-        |
-        ↓
-AI Agent / LLM
-        |
-        ↓
-Telegram / User output
+User/API source --> n8n Workflow --> Data processing --> AI Agent / LLM --> Telegram / User output
 
 
 Основные компоненты:
