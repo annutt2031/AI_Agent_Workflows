@@ -1,0 +1,165 @@
+{
+  "name": "AI_Telegram_Career_Bot",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{$node[\"Telegram Trigger\"].json.message.text}}",
+        "options": {
+          "systemMessage": "Ты карьерный консультант.\nТвоя цель: подобрать специализацию в рамках направления обучения пользователя (например, фронтенд/бэкенд/аналитика/ML и т.д.) и дать итоговую рекомендацию.\nРаботай как диалоговый агент: спрашивай вопросы по одному, если пользователь написал «Посоветуй профессию» начни интервью.\n\nСохраняй ответы, в конце дай рекомендацию по выбору специализации из списка направлений в школе 21, в рамках выбранного пользователем направления обучения\nСписок:\nНаправления по разработке:\nбэкенд;\nфронтенд;\nмобильная разработка (Android и iOS);\nGameDev.\n\nНаправления, не касающиеся разработки:\nкибербезопасность;\nData Science;\nсистемный и бизнес-анализ;\nтестирование ПО (QA);\nDevOps и обеспечение бесперебойной работы высоконагруженных сервисов.\n\n(например если выбрано направление \"Разработка ПО\", то, например, результатом работы может быть \"тебе больше подойдет бэкенд или фронтенд, на таком-то языке\"\nНачинай работу только после команды пользователя: «Посоветуй профессию».\nЕсли команда другая — вежливо попроси написать “Посоветуй профессию”.\nОбязательно спроси про: опыт и достижения, опыт бассейна, интересы, цели и темп, сильные/слабые стороны, формат работы (удаленно/офлайн), размер компании, возраст и город проживания, не спрашивай на прямую какое из предоставленных направлений больше нравится, ты должен постепенно подойти к выводу.\nНе проси и не сохраняй чувствительные данные (ФИО, пароли и т.д.). Проси обезличивать метрики.\n\nпосле команды stop забывай историю переписки\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        224,
+        0
+      ],
+      "id": "801330ae-9511-4f19-91ec-2940aadb2dc5",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "GigaChat/GigaChat-2-Max",
+          "mode": "id"
+        },
+        "responsesApiEnabled": false,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        96,
+        208
+      ],
+      "id": "114659a4-5764-476c-a9bf-eef961e6445c",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "1r4igq3XYPNhMnTx",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "243d5e8d-95ac-4047-b7a8-1e03dab82aae",
+      "name": "Telegram Trigger",
+      "webhookId": "50be03cc-38f9-4d6c-852c-afa6d2862835",
+      "credentials": {
+        "telegramApi": {
+          "id": "Yfr1IO7RZWziBWpm",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{$node[\"Telegram Trigger\"].json.message.chat.id}}",
+        "text": "={{$node[\"AI Agent\"].json.output}}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        512,
+        16
+      ],
+      "id": "d1cc619e-dfd8-4e7f-ba49-77c6a3af327e",
+      "name": "Send a text message",
+      "webhookId": "acdb32b0-90ef-4233-b74e-1b7c2c873cf5",
+      "credentials": {
+        "telegramApi": {
+          "id": "Yfr1IO7RZWziBWpm",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.message.chat.id }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        272,
+        208
+      ],
+      "id": "747c47a0-a7a6-4736-bf5a-d905843f8c05",
+      "name": "Simple Memory"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c7340dda-c7cb-41ab-83c9-f8fa703c73ca",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c56c9ff67fb28ee75e82b033ac848815c797621968d82f52f1555147269fe3f1"
+  },
+  "id": "DxcUQcuiGorZ5zk5",
+  "tags": []
+}

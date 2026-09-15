@@ -1,0 +1,672 @@
+{
+  "name": "2 вариант Задание 5",
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "GigaChat/GigaChat-2-Max",
+          "mode": "id"
+        },
+        "responsesApiEnabled": false,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        192,
+        272
+      ],
+      "id": "6d8b1ecb-e2eb-4394-8a0d-586c9e989504",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "giL192PM2gZDCdCF",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{$json.route}}",
+                    "rightValue": "ASK",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "a5406828-00f4-4090-baa3-d79b58a5dd93"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "b24743e0-b8bf-4598-b388-f7ec1d3437cf",
+                    "leftValue": "={{$json.route}}",
+                    "rightValue": "PLAN",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "7ec207ae-9093-4dce-b598-d210b0b67a06",
+                    "leftValue": "={{$json.route}}",
+                    "rightValue": "POST",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        -224,
+        112
+      ],
+      "id": "709dc3d0-1ead-4542-87ac-ea5237580fbb",
+      "name": "01 Stage Switch"
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -624,
+        112
+      ],
+      "id": "c7ce2624-5b64-44d5-8a7f-43aeecb0e75e",
+      "name": "Telegram Trigger",
+      "webhookId": "50be03cc-38f9-4d6c-852c-afa6d2862835",
+      "credentials": {
+        "telegramApi": {
+          "id": "DsZtzvc6TCc2b0qI",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{$json.chatId}}",
+        "text": "=Чему бы ты хотел(а) научиться?\nНапиши тему и уровень (например: \"SQL, начинающий\" или \"Python, средний\").\nЧтобы сбросить прогресс: /reset",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "a4f246b9-b7a8-45ab-b145-c2a9b566b935",
+      "name": "Ask about goal",
+      "webhookId": "ccb7636d-b2e5-4042-a0eb-f7f7ea2dae8d",
+      "credentials": {
+        "telegramApi": {
+          "id": "DsZtzvc6TCc2b0qI",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Пользователь написал: {{$node[\"Путеводитель + StaticData\"].json.text}}\nСоставь план по правилам из system prompt.",
+        "options": {
+          "systemMessage": "Ты составляешь учебный план.\n\nвывод: верни только валидный JSON. Никакого текста, никаких пояснений, никаких кавычек вокруг всего ответа.\n\nСтрогая схема (ровно эти поля):\n{\n  \"goal\": \"строка\",\n  \"level\": \"строка\",\n  \"topics\": [\n    { \"title\": \"строка\", \"concepts\": [\"строка\",\"строка\",\"строка\"] },\n    { \"title\": \"строка\", \"concepts\": [\"строка\",\"строка\",\"строка\"] },\n    { \"title\": \"строка\", \"concepts\": [\"строка\",\"строка\",\"строка\"] },\n    { \"title\": \"строка\", \"concepts\": [\"строка\",\"строка\",\"строка\"] },\n    { \"title\": \"строка\", \"concepts\": [\"строка\",\"строка\",\"строка\"] }\n  ]\n}\n\nЖЁСТКИЕ ТРЕБОВАНИЯ:\n1) topics должно быть ровно 5.\n2) В каждой теме concepts ДОЛЖНО быть от 3 до 5.\n3) title — это нормальное название темы, а не \"Тема 1/2/3\", не список терминов и не предложение.\n   Примеры title: \"Основы машинного обучения\", \"Подготовка данных\", \"Модели и обучение\", \"Оценка качества\", \"Практика и кейсы\".\n4) concepts — это короткие понятия (1–4 слова), без точек, без длинных объяснений.\n   Примеры concepts: \"обучение с учителем\", \"классификация\", \"регрессия\", \"кросс-валидация\".\n5) Не дублируй одинаковые concepts между темами.\n6) Не используй слова \"Тема 1\", \"Тема 2\" нигде в JSON.\n7) Если не уверен — всё равно верни JSON по схеме, без лишнего текста.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        192,
+        128
+      ],
+      "id": "46c03657-8162-4c8e-8832-47af2b404adf",
+      "name": "AI Make Plan"
+    },
+    {
+      "parameters": {
+        "jsCode": "const chatId = $node[\"Путеводитель + StaticData\"].json.chatId;\n\nconst sd = $getWorkflowStaticData('global');\nsd.users = sd.users || {};\nconst key = `u_${chatId}`;\nconst user = sd.users[key] || {};\n\nconst raw =\n  (typeof $json.output === 'string' && $json.output) ||\n  (typeof $json.text === 'string' && $json.text) ||\n  (typeof $json.response === 'string' && $json.response) ||\n  '';\n\nconst trimmed = raw.trim();\n\nlet data;\ntry {\n  data = JSON.parse(trimmed);\n} catch (e) {\n  const start = trimmed.indexOf('{');\n  const end = trimmed.lastIndexOf('}');\n  if (start === -1 || end === -1 || end <= start) {\n    throw new Error('AI не вернул JSON. Начало ответа: ' + trimmed.slice(0, 200));\n  }\n  const jsonStr = trimmed.slice(start, end + 1);\n  data = JSON.parse(jsonStr);\n}\n\nconst topics = Array.isArray(data.topics) ? data.topics : [];\n\n//очередь постов\nconst queueDraft = topics.map(t => ({\n  topic: String(t.title || 'Тема').trim(),\n  concepts: Array.isArray(t.concepts) ? t.concepts.map(x => String(x).trim()).filter(Boolean) : [],\n}));\n\nuser.draft = { goal: data.goal || '', level: data.level || '', topics };\nuser.queueDraft = queueDraft;\nuser.cursor = 0;\nuser.state = 'WAIT_CONFIRM';\n\nsd.users[key] = user;\n\nconst planText = topics\n  .map((t, i) => {\n    const title = (t.title || `Тема ${i + 1}`).trim();\n    const concepts = Array.isArray(t.concepts) ? t.concepts : [];\n    return `Тема ${i + 1}: ${title}\\n[${concepts.join(', ')}]`;\n  })\n  .join('\\n\\n');\n\nreturn [\n  {\n    json: {\n      chatId,\n      planText,\n    },\n  },\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        544,
+        128
+      ],
+      "id": "cae986ee-6df8-4e2f-9345-6d605547f26d",
+      "name": "JS Save Draft Plan"
+    },
+    {
+      "parameters": {
+        "jsCode": "const chatId = $node[\"Путеводитель + StaticData\"].json.chatId;\nconst userText = ($node[\"Путеводитель + StaticData\"].json.text || '').trim();\nconst t = userText.toLowerCase();\n\nconst sd = $getWorkflowStaticData('global');\nsd.users = sd.users || {};\nconst key = `u_${chatId}`;\nconst user = sd.users[key] || { state: 'WAIT_GOAL' };\n\nconst yes = ['да'];\nconst isYes = yes.includes(t);\n\nlet confirmed = false;\nlet messageForFalse = 'Хорошо! Тогда напиши новую тему и уровень (например: \"SQL, начинающий\").';\n\nif (user.state === 'WAIT_CONFIRM') {\n  if (isYes) {\n\n    user.plan = user.draft;\n    user.queue = user.queueDraft || [];\n    user.cursor = 0;\n    user.state = 'POSTING';\n    delete user.draft;\n    delete user.queueDraft;\n    confirmed = true;\n  } else {\n\n    user.state = 'WAIT_GOAL';\n    delete user.draft;\n    delete user.queueDraft;\n    delete user.plan;\n    delete user.queue;\n    user.cursor = 0;\n    confirmed = false;\n  }\n} else if (user.state === 'POSTING') {\n  const cursor = Number(user.cursor || 0);\n  const queue = user.queue || [];\n  if (cursor >= queue.length) {\n    user.state = 'WAIT_GOAL';\n    confirmed = false;\n    messageForFalse = 'Мы прошли весь план \\n\\nЧто хочешь изучать дальше? Напиши тему и уровень.';\n  } else {\n    confirmed = true;\n  }\n} else {\n  user.state = 'WAIT_GOAL';\n  confirmed = false;\n  messageForFalse = 'Давай начнём заново. Напиши тему и уровень.';\n}\n\nsd.users[key] = user;\n\nconst cursor = Number(user.cursor || 0);\nconst queue = user.queue || [];\nconst item = queue[cursor] || {};\n\nreturn [{\n  json: {\n    chatId,\n    confirmed,\n    messageForFalse,\n    topic: item.topic || '',\n    concepts: item.concepts || '',\n    cursor,\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -16,
+        480
+      ],
+      "id": "9d0f2c3a-5a52-4349-9162-86250aa31d82",
+      "name": "JS Post Prep"
+    },
+    {
+      "parameters": {
+        "chatId": "={{$node[\"Telegram Trigger\"].json.message.chat.id}}",
+        "text": "={{$json.messageForFalse}}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        496,
+        832
+      ],
+      "id": "e76b5614-723e-43f9-8d3a-a48d243e4600",
+      "name": "Repeat theme / finished",
+      "webhookId": "04edec7d-703c-45e1-97ed-3c3db4bde746",
+      "credentials": {
+        "telegramApi": {
+          "id": "DsZtzvc6TCc2b0qI",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b0f13921-a1e1-46aa-9f2c-55f15cfe0a8e",
+              "leftValue": "={{$json.confirmed}}",
+              "rightValue": "true",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        192,
+        480
+      ],
+      "id": "d9891807-3fee-48b7-8bc8-532283848a22",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "GigaChat/GigaChat-2-Max",
+          "mode": "id"
+        },
+        "responsesApiEnabled": false,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        576,
+        672
+      ],
+      "id": "3de910b7-6fec-44b8-af6b-62494c015706",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "giL192PM2gZDCdCF",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=={{$json.topic}}",
+        "options": {
+          "systemMessage": "Ты — ИИ-агент внутри n8n.\nтебе всегда нужны актуальные данные из интернета.\nПоэтому ты НЕ отвечаешь текстом.\nВместо этого ты пишешь строку РОВНО в формате:\ntavily(query=\"...\")\nНикакого другого текста."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        576,
+        480
+      ],
+      "id": "04a72d8b-59cf-43d7-86f9-3f8e96ce205a",
+      "name": "AI Tavily Query"
+    },
+    {
+      "parameters": {
+        "jsCode": "const base = $node[\"JS Post Prep\"].json;\n\nconst raw =\n  (typeof $json.output === 'string' && $json.output) ||\n  (typeof $json.text === 'string' && $json.text) ||\n  '';\n\nconst m = raw.match(/tavily\\(\\s*query\\s*=\\s*\"([^\"]+)\"\\s*\\)/i);\nconst tavilyQuery = m ? m[1] : `${base.topic}`.trim();\n\nreturn [{\n  json: {\n    chatId: base.chatId,\n    topic: base.topic,\n    concept: base.concept,\n    cursor: base.cursor,\n    tavilyQuery,\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        928,
+        480
+      ],
+      "id": "19366cd6-5993-4a6e-8ddf-252af827c6d8",
+      "name": "JS Parse Tavily"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.tavily.com/search",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer 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"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "search_depth",
+              "value": "basic"
+            },
+            {
+              "name": "include_answer",
+              "value": "={{ true }}"
+            },
+            {
+              "name": "query",
+              "value": "={{$json.tavilyQuery}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1136,
+        480
+      ],
+      "id": "450dcd2b-3279-4365-9c6d-6c8dd7bb93d6",
+      "name": "HTTP Tavily",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=={{$node[\"Build post\"].json.postPrompt}}",
+        "options": {
+          "systemMessage": "Ты получаешь результаты веб-поиска Tavily в JSON.\nИспользуй поле answer и results, чтобы дать пользователю краткий, понятный пост.\nТы пишешь один пост по теме topic.\nне пиши отдельный пост по каждому понятию.\nconcepts - только подсказки: упомяни 2–4 из них внутри одного поста.\nОбязательно опирайся только на Tavily, не придумывай факты."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        1760,
+        480
+      ],
+      "id": "ba8d3bb9-3f0a-4d46-8761-75a2ee3b8b9d",
+      "name": "AI Write Post"
+    },
+    {
+      "parameters": {
+        "jsCode": "const ctx = $node[\"JS Parse Tavily\"].json;\n\nconst chatId = ctx.chatId;\nconst topic = ctx.topic;\nconst concept = ctx.concept;\nconst cursor = Number(ctx.cursor || 0);\n\nconst answer = $json.answer || '';\nconst results = $json.results || [];\n\nconst sd = $getWorkflowStaticData('global');\nsd.users = sd.users || {};\nconst key = `u_${chatId}`;\nconst user = sd.users[key] || {};\nuser.cursor = cursor + 1;\nsd.users[key] = user;\n\nconst tavilyJson = JSON.stringify({ answer, results }, null, 2);\n\nconst postPrompt =\n`Тема: \"${topic}\"\nПонятие: \"${concept}\"\n\nОтвет Tavily (JSON):\n${tavilyJson}\n\nСформулируй лаконичный обучающий пост (800–1200 знаков):\n- объясни тему простыми словами\n- 1 определение\n- 2 практических применения\n- опирайся только на Tavily, не придумывай факты\n- если уместно, добавь 1 ссылку из results`;\n\nreturn [{\n  json: {\n    chatId,\n    postPrompt\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1552,
+        480
+      ],
+      "id": "2122f427-9481-4eb4-ab07-c06c53194b7d",
+      "name": "Build post"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "GigaChat/GigaChat-2-Max",
+          "mode": "id"
+        },
+        "responsesApiEnabled": false,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1760,
+        704
+      ],
+      "id": "da997350-203f-4cc8-ab64-4e5c99d72a95",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "giL192PM2gZDCdCF",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{$node[\"Build post\"].json.chatId}}",
+        "text": "={{$json.output}}\n\nЧтобы получить следующий пост — напиши: \"дальше\"",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2112,
+        480
+      ],
+      "id": "6f028d52-ad5e-4762-9e44-c96c944b6bdc",
+      "name": "Send a text message",
+      "webhookId": "58b4e3f2-f111-46f4-ac7f-8ca59216ee03",
+      "credentials": {
+        "telegramApi": {
+          "id": "DsZtzvc6TCc2b0qI",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{$node[\"Telegram Trigger\"].json.message.chat.id}}",
+        "text": "={{$json.planText}}  \n\nПодтверди план: если всё устраивает, напиши \"да\"\nНе устраивает, нужна другая тема, напиши \"нет\"",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        768,
+        128
+      ],
+      "id": "af9f936b-16a3-4696-8403-8ff6ea0d841a",
+      "name": "Send a text message1",
+      "webhookId": "acdb32b0-90ef-4233-b74e-1b7c2c873cf5",
+      "credentials": {
+        "telegramApi": {
+          "id": "DsZtzvc6TCc2b0qI",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const msg = $json.message;\nif (!msg || !msg.chat || !msg.chat.id) {\n  throw new Error('Не найден chat.id');\n}\n\nconst chatId = msg.chat.id;\nconst text = (msg.text || '').trim();\nconst lower = text.toLowerCase();\n\nconst sd = $getWorkflowStaticData('global');\nsd.users = sd.users || {};\n\nconst key = `u_${chatId}`;\nconst u = sd.users[key] || { state: 'ASK' };\nconst before = u.state;\n\nif (lower === '/reset' || lower === 'reset') {\n  u.state = 'WAIT_GOAL';\n  delete u.goalText;\n  delete u.plan;\n  delete u.queue;\n  u.cursor = 0;\n\n  sd.users[key] = u;\n\n  return [{\n    json: {\n      chatId,\n      text,\n      route: 'ASK',\n      before,\n      after: u.state\n    }\n  }];\n}\n\nlet route = 'ASK';\n\nif (u.state === 'ASK') {\n  u.state = 'WAIT_GOAL';\n  route = 'ASK';\n\n} else if (u.state === 'WAIT_GOAL') {\n  if (text) {\n    u.goalText = text;\n    route = 'PLAN';\n  } else {\n    route = 'ASK';\n  }\n\n} else {\n  route = 'POST';\n}\n\nsd.users[key] = u;\n\nreturn [{\n  json: {\n    chatId,\n    text,\n    route,\n    before,\n    after: u.state\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -432,
+        112
+      ],
+      "id": "9133de1f-674f-4377-88f4-6c10b61fe04c",
+      "name": "Путеводитель + StaticData"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Make Plan",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "01 Stage Switch": {
+      "main": [
+        [
+          {
+            "node": "Ask about goal",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Make Plan",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "JS Post Prep",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Путеводитель + StaticData",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Make Plan": {
+      "main": [
+        [
+          {
+            "node": "JS Save Draft Plan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JS Save Draft Plan": {
+      "main": [
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JS Post Prep": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "AI Tavily Query",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Repeat theme / finished",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Tavily Query",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Tavily Query": {
+      "main": [
+        [
+          {
+            "node": "JS Parse Tavily",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JS Parse Tavily": {
+      "main": [
+        [
+          {
+            "node": "HTTP Tavily",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Tavily": {
+      "main": [
+        [
+          {
+            "node": "Build post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build post": {
+      "main": [
+        [
+          {
+            "node": "AI Write Post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Write Post",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Write Post": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Путеводитель + StaticData": {
+      "main": [
+        [
+          {
+            "node": "01 Stage Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "541ac1ba-cbcd-4d05-ab2a-d4b5e9943c8c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b9577ae97dc92d0154ab13e2b5edbd3cebc21b9ec2a0a8ecdd2bd2cda639859d"
+  },
+  "id": "SYwHTIh9G93Qub8U",
+  "tags": []
+}

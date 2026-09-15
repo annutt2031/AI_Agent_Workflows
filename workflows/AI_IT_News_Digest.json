@@ -1,0 +1,405 @@
+{
+  "name": "AI_News_Digest",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 15
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -192,
+        128
+      ],
+      "id": "910b4b38-2d21-4da0-9bd7-ddda4032cec0",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://fetchrss.com/feed/1vfPa05lj2LK1vfPYPGdS5mk.rss",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "7a97440f-4879-4a11-b357-70e7602f20bb",
+      "name": "RSS Read"
+    },
+    {
+      "parameters": {
+        "url": "https://fetchrss.com/feed/1vfPa05lj2LK1vfPge8CE8Yu.rss",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        16,
+        128
+      ],
+      "id": "4db7fefc-b5b3-4e66-8ab5-c06a9a77ea14",
+      "name": "RSS Read1"
+    },
+    {
+      "parameters": {
+        "url": "https://fetchrss.com/feed/1vfPa05lj2LK1vfPiD6PACcE.rss",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        16,
+        288
+      ],
+      "id": "0022df88-7974-470a-8dc5-deaca5ddfc4b",
+      "name": "RSS Read2"
+    },
+    {
+      "parameters": {
+        "numberInputs": 3
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        624,
+        128
+      ],
+      "id": "8bde1755-9737-4823-969e-6b6cbb0f1b52",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "GigaChat/GigaChat-2-Max",
+          "mode": "id"
+        },
+        "responsesApiEnabled": false,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1024,
+        384
+      ],
+      "id": "80a47219-4363-4d4c-9a49-c0950334a64c",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "1r4igq3XYPNhMnTx",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1724fe55-1a0c-4bd5-96ba-4738b4891c68",
+              "name": "channel",
+              "value": "Библиотека дата-сайентиста",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "include": "selected",
+        "includeFields": "=title, link, content",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        240,
+        0
+      ],
+      "id": "e5cfa423-2109-449c-bd9a-23b80ce864db",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c3714dc0-f4a1-4351-8b3f-8b01e8f9bb39",
+              "name": "channel",
+              "value": "Алгоритмы - Собеседования",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "include": "selected",
+        "includeFields": "title, link, content",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        128
+      ],
+      "id": "f6b140e0-f48b-4253-9edb-43d6657cbe83",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8793c18e-870f-4539-a656-c0fe93fe4562",
+              "name": "channel",
+              "value": "Job for Junior",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "include": "selected",
+        "includeFields": "title, link, content",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        288
+      ],
+      "id": "50cab389-596d-45bd-8949-75d29d7405f9",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Сформируй дайджест из списка постов ниже (массив JSON):\n{{$json.postsText}}",
+        "options": {
+          "systemMessage": "Ты формируешь ежедневный дайджест.\nВ оформлении дайджеста можешь использовать эмодзи.\nВход: массив posts, у каждого есть channel, title, link, snippet/content.\n\nПравила:\n- Сначала общее саммари в 1 абзаце.\n- Затем по каждому каналу блоком:\n  Название канала - @никнейм канала, чтобы было кликабельно — количество постов (число - постов)\n  пост 1: кратко (1 предложение), кликабельная ссылка на пост\n  пост 2: кратко (1 предложение), кликабельная ссылка на пост\n- Не смешивай ссылки: ссылка должна принадлежать тому же посту.\n- Не выдумывай факты."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        1168,
+        128
+      ],
+      "id": "65afbf6a-931f-431f-b110-be9ca9685eb7",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "chatId": "-1003671561098",
+        "text": "={{$json.output}}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1600,
+        128
+      ],
+      "id": "4e4af821-d5a9-45ae-aa6d-c2e37ab81e97",
+      "name": "Send a text message",
+      "webhookId": "f4e1f424-8cd9-42b9-a58b-11c2ba2c3305",
+      "credentials": {
+        "telegramApi": {
+          "id": "Yfr1IO7RZWziBWpm",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "posts",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        832,
+        128
+      ],
+      "id": "957a81a4-481c-4b2f-80ec-68e6a708e441",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "jsCode": "const posts = $json.posts || [];\n\nconst cleanHtml = (s) => (s || '').toString().replace(/<[^>]*>/g, ' ').replace(/\\s+/g, ' ').trim();\n\nconst normalized = posts.map((p) => ({\n  channel: p.channel || p.channelTitle || 'Unknown channel',\n  title: cleanHtml(p.title),\n  link: p.link || '',\n  text: cleanHtml(p.snippet || p.content || ''),\n  pubDate: p.pubDate || p.isoDate || '',\n}));\n\nreturn [\n  {\n    json: {\n      posts: normalized,\n      postsText: JSON.stringify(normalized, null, 2), // вот это будем скармливать AI Agent\n      postsTotal: normalized.length,\n      channelsCount: [...new Set(normalized.map(p => p.channel))].length,\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        992,
+        128
+      ],
+      "id": "42b7eed7-4786-4c25-b97a-f94caea03bda",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "RSS Read",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RSS Read1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RSS Read2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Read": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Read1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS Read2": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "09d88f7e-c9a1-47c8-b1f9-4e612ccca29f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c56c9ff67fb28ee75e82b033ac848815c797621968d82f52f1555147269fe3f1"
+  },
+  "id": "HaaY0VgatpNgodyo",
+  "tags": []
+}
